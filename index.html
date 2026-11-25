@@ -1336,7 +1336,7 @@
       window.editScheduleField = async (id, field, currentVal) => {
         if (!guardParticipantAction()) return;
         const val = prompt(
-          `Editar ${field === "menu" ? "Menú" : "Plan / Actividad"}:`,
+          `Editar ${field === "menu" ? "Menú" : field === "time" ? "Horario" : "Plan / Actividad"}:`,
           currentVal,
         );
         if (val === null || !val.trim()) return;
@@ -1364,6 +1364,24 @@
         });
         await persistState();
         showToast("Bloque agregado al calendario");
+      };
+
+      window.deleteScheduleSlot = async (id) => {
+        if (!guardParticipantAction()) return;
+        if (state.schedule.length <= 1)
+          return showToast("Debe quedar al menos un bloque");
+        state.schedule = state.schedule.filter((s) => s.id !== id);
+        await persistState();
+        showToast("Bloque eliminado del calendario 🗑️");
+      };
+
+      window.updateScheduleRole = async (id, roleField, newCode) => {
+        if (!guardParticipantAction()) return;
+        const slot = state.schedule.find((s) => s.id === id);
+        if (!slot) return;
+        slot[roleField] = newCode;
+        await persistState();
+        showToast("Turno actualizado");
       };
 
       window.saveBudgetConfig = async () => {
@@ -1651,27 +1669,71 @@
 
       function renderSchedule() {
         const canEdit = isParticipant();
+        const roleOptions = [
+          { val: "ALL", label: "Todos" },
+          { val: "NONE", label: "Sin cocina / No aplica" },
+          { val: "A", label: getDuplaNames("A") },
+          { val: "B", label: getDuplaNames("B") },
+          { val: "C", label: getDuplaNames("C") },
+          { val: "D", label: getDuplaNames("D") },
+          { val: "E", label: getDuplaNames("E") },
+        ];
+
         document.getElementById("scheduleList").innerHTML = state.schedule
           .map(
             (s) => `
-        <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div class="space-y-1">
-            <span class="inline-block bg-sky-100 text-sky-800 text-xs font-extrabold px-2.5 py-0.5 rounded-md">${s.time}</span>
-            <div class="flex items-center gap-2">
-              <h4 class="font-bold text-slate-900 text-sm">${s.menu}</h4>
-              ${canEdit ? `<button onclick="editScheduleField('${s.id}', 'menu', '${s.menu.replace(/'/g, "\\'")}')" class="text-[11px] text-sky-600 hover:underline font-bold">✏️ Editar</button>` : ""}
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="space-y-1 flex-1">
+                <div class="flex items-center gap-2">
+                <span class="inline-block bg-sky-100 text-sky-800 text-xs font-extrabold px-2.5 py-0.5 rounded-md">${s.time}</span>
+                ${
+                  canEdit
+                    ? `
+                    <button onclick="editScheduleField('${s.id}', 'time', '${s.time.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-sky-600" title="Editar horario">✏️</button>
+                    <button onclick="deleteScheduleSlot('${s.id}')" class="text-[11px] text-rose-500 hover:text-rose-700 font-bold ml-1" title="Eliminar bloque">🗑️ Borrar</button>
+                `
+                    : ""
+                }
+                </div>
+                <div class="flex items-center gap-2">
+                <h4 class="font-bold text-slate-900 text-sm">${s.menu}</h4>
+                ${canEdit ? `<button onclick="editScheduleField('${s.id}', 'menu', '${s.menu.replace(/'/g, "\\'")}')" class="text-[11px] text-sky-600 hover:underline font-bold">✏️ Editar</button>` : ""}
+                </div>
+                <div class="flex items-center gap-2">
+                <p class="text-xs text-slate-500">🎯 ${s.plan}</p>
+                ${canEdit ? `<button onclick="editScheduleField('${s.id}', 'plan', '${s.plan.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-sky-600">✏️</button>` : ""}
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-              <p class="text-xs text-slate-500">🎯 ${s.plan}</p>
-              ${canEdit ? `<button onclick="editScheduleField('${s.id}', 'plan', '${s.plan.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-sky-600">✏️</button>` : ""}
+
+            <div class="flex flex-wrap gap-2 text-xs font-bold shrink-0">
+                <div class="px-2.5 py-1.5 rounded-lg bg-amber-100 text-amber-900 flex items-center gap-1.5">
+                <span>🍳 Cocina:</span>
+                ${
+                  canEdit
+                    ? `
+                    <select onchange="updateScheduleRole('${s.id}', 'cook', this.value)" class="bg-transparent font-extrabold outline-none cursor-pointer">
+                    ${roleOptions.map((opt) => `<option value="${opt.val}" ${s.cook === opt.val ? "selected" : ""}>${opt.label}</option>`).join("")}
+                    </select>
+                `
+                    : `<span>${getDuplaNames(s.cook)}</span>`
+                }
+                </div>
+
+                <div class="px-2.5 py-1.5 rounded-lg bg-emerald-100 text-emerald-900 flex items-center gap-1.5">
+                <span>🧽 Lava:</span>
+                ${
+                  canEdit
+                    ? `
+                    <select onchange="updateScheduleRole('${s.id}', 'clean', this.value)" class="bg-transparent font-extrabold outline-none cursor-pointer">
+                    ${roleOptions.map((opt) => `<option value="${opt.val}" ${s.clean === opt.val ? "selected" : ""}>${opt.label}</option>`).join("")}
+                    </select>
+                `
+                    : `<span>${getDuplaNames(s.clean)}</span>`
+                }
+                </div>
             </div>
-          </div>
-          <div class="flex flex-wrap gap-2 text-xs font-bold shrink-0">
-            <span class="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-900">🍳 Cocina: ${getDuplaNames(s.cook)}</span>
-            <span class="px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-900">🧽 Lava: ${getDuplaNames(s.clean)}</span>
-          </div>
-        </div>
-      `,
+            </div>
+        `,
           )
           .join("");
       }
