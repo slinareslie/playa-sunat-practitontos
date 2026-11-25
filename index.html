@@ -113,13 +113,13 @@
           <p class="text-sm text-slate-500">Apúntate a una comisión. Define tu compra previa y tus turnos de cocina y limpieza.</p>
         </div>
 
-        <div class="flex items-center gap-3">
-          <!-- Control de Cupos solo visible para Admin -->
+        <div class="flex flex-wrap items-center gap-3">
           <div id="adminCapacityControl" class="hidden bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl">
             <label class="text-[10px] font-extrabold text-rose-700 uppercase block">Tope Cupos (Admin)</label>
             <div class="flex items-center gap-1.5 mt-1">
               <input id="maxMembersInput" type="number" min="2" max="30" class="w-16 px-2 py-1 rounded-lg border border-rose-300 text-sm font-extrabold text-center bg-white" />
               <button onclick="updateMaxMembersAdmin()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold px-2.5 py-1.5 rounded-lg">OK</button>
+              <button onclick="seedDraftAdmin()" title="Restaurar borrador base" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-extrabold px-2.5 py-1.5 rounded-lg">🔄 Borrador</button>
             </div>
           </div>
 
@@ -155,7 +155,7 @@
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div>
-            <h2 class="text-lg font-extrabold text-slate-900">Calendario de Comidas y Turnos (Editable)</h2>
+            <h2 class="text-lg font-extrabold text-slate-900">Calendario de Comidas y Turnos (Borrador Editable)</h2>
             <p class="text-sm text-slate-500">Regla de oro: <strong>quien cocina NO lava ese turno</strong>. Puedes editar cualquier menú o plan.</p>
           </div>
           <button onclick="addScheduleSlot()" class="participant-only bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl">+ Agregar bloque</button>
@@ -166,26 +166,29 @@
 
     <!-- TAB 3: COSTOS Y YAPES (CONFIGURABLE EN VIVO) -->
     <section id="view-cuotas" class="view-section hidden space-y-5">
-      <!-- Panel de configuración de costos -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <div class="flex items-center justify-between mb-3">
           <div>
-            <h3 class="text-base font-extrabold text-slate-900">⚙️ Configuración de Costos por Persona (Editable en vivo)</h3>
-            <p class="text-xs text-slate-500">Ajusta los montos reales y el sistema recalcula las cuotas de todos al instante.</p>
+            <h3 class="text-base font-extrabold text-slate-900">⚙️ Configuración de Costos (Borrador Editable)</h3>
+            <p class="text-xs text-slate-500">Base actual: <strong>S/ 300</strong> de alquiler de casa + <strong>S/ 100</strong> de garantía. Ajusta los montos en vivo.</p>
           </div>
           <button onclick="saveBudgetConfig()" class="participant-only bg-slate-900 hover:bg-sky-700 text-white text-xs font-extrabold px-4 py-2 rounded-xl transition">Guardar montos</button>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-3">
           <div>
-            <label class="text-[11px] font-bold text-slate-500 uppercase">Casa / Alquiler (S/)</label>
+            <label class="text-[11px] font-bold text-slate-500 uppercase">Alquiler Casa (S/)</label>
             <input id="cfgHouse" type="number" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold" />
           </div>
           <div>
-            <label class="text-[11px] font-bold text-slate-500 uppercase">Comida e Insumos (S/)</label>
+            <label class="text-[11px] font-bold text-slate-500 uppercase">Garantía Casa (S/)</label>
+            <input id="cfgDeposit" type="number" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 uppercase">Comida/Pers. (S/)</label>
             <input id="cfgFood" type="number" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold" />
           </div>
           <div>
-            <label class="text-[11px] font-bold text-slate-500 uppercase">Fondo Trago (S/)</label>
+            <label class="text-[11px] font-bold text-slate-500 uppercase">Trago/Pers. (S/)</label>
             <input id="cfgDrinks" type="number" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold" />
           </div>
           <div>
@@ -200,7 +203,7 @@
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <span class="text-xs font-bold text-slate-400 uppercase">Fondo Total Grupal</span>
           <p id="statTotalBudget" class="text-2xl font-extrabold text-slate-900 mt-1">S/ 0</p>
-          <span class="text-xs text-slate-500">Incluye cuotas base + gastos extra</span>
+          <span id="statDepositNote" class="text-xs text-slate-500">Incluye garantía devuelta al salir</span>
         </div>
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <span class="text-xs font-bold text-emerald-600 uppercase">Recaudado (Yape/Plin)</span>
@@ -238,7 +241,7 @@
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <h2 class="text-lg font-extrabold text-slate-900">Checklist Colaborativo (Editable)</h2>
+            <h2 class="text-lg font-extrabold text-slate-900">Checklist Colaborativo (Borrador Editable)</h2>
             <p class="text-sm text-slate-500">Marca lo que llevas, edita cantidades o borra lo que no necesiten.</p>
           </div>
           <span id="checklistProgress" class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1.5 rounded-full">0 / 0 listos</span>
@@ -261,7 +264,6 @@
 
     <!-- TAB 5: ALCOHOLIMPIADAS Y VOTACIONES ANÓNIMAS -->
     <section id="view-juegos" class="view-section hidden space-y-6">
-      <!-- Marcador Alcoholimpiadas -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <h2 class="text-lg font-extrabold text-slate-900">🏅 Marcador Alcoholimpiadas (Martes Tarde/Noche)</h2>
         <div id="scoreboardGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4"></div>
@@ -276,7 +278,6 @@
         </div>
       </div>
 
-      <!-- Premios Versión Practicantes (Voto Anónimo por Cuenta) -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
@@ -285,7 +286,6 @@
           </div>
         </div>
 
-        <!-- Agregar nuevo premio -->
         <div class="participant-only flex flex-col sm:flex-row gap-2 mb-5 bg-slate-50 p-3 rounded-xl border border-slate-200">
           <input id="newAwardTitle" type="text" placeholder="Nuevo premio (ej. Premio 'Tardanza justificada')" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold bg-white" />
           <input id="newAwardDesc" type="text" placeholder="Descripción breve..." class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white" />
@@ -324,7 +324,7 @@
     const ADMIN_EMAILS = ["sebastianlinares2409@gmail.com", "slinareslie@unjbg.edu.pe"];
 
     const DUPLAS_META = [
-      { id: "A", title: "Dupla A • Tesorería y Casa", desc: "Recibe Yapes, cuadra boletas, llaves, check-in y garantía.", color: "border-sky-500 bg-sky-50/40" },
+      { id: "A", title: "Dupla A • Tesorería y Casa", desc: "Recibe Yapes, cuadra boletas, llaves, check-in y garantía (S/ 300 + S/ 100).", color: "border-sky-500 bg-sky-50/40" },
       { id: "B", title: "Dupla B • Comida y Mercado", desc: "Compra carnes, chorizos, pollos, verduras, pan y snacks.", color: "border-emerald-500 bg-emerald-50/40" },
       { id: "C", title: "Dupla C • Tragos, Hielo y Agua", desc: "Compra latas, destilados, mezcladores, limones, hielo y bidones.", color: "border-amber-500 bg-amber-50/40" },
       { id: "D", title: "Dupla D • Juegos y Premios", desc: "Vasos rojos, pelotas ping-pong, reglas Alcoholimpiadas y diplomas.", color: "border-purple-500 bg-purple-50/40" },
@@ -382,11 +382,11 @@
 
     let state = {
       maxMembers: 10,
-      budget: { house: 0, food: 95, drinks: 60, firstPct: 65 },
-      members: [],     // { uid, email, name, drinks, dupla, paid1, paid2 }
-      spectators: [],  // { uid, email, name }
-      blockedUids: [], // UIDs bloqueados por admin
-      activeUids: [],  // Espejo de UIDs con permiso de escritura
+      budget: { house: 300, deposit: 100, food: 75, drinks: 60, firstPct: 65 },
+      members: [],
+      spectators: [],
+      blockedUids: [],
+      activeUids: [],
       schedule: DEFAULT_SCHEDULE,
       checklist: DEFAULT_CHECKLIST,
       expenses: [],
@@ -419,7 +419,6 @@
       return true;
     }
 
-    // Autenticación Google
     window.loginWithGoogle = async () => {
       const errEl = document.getElementById("authErrorMsg");
       errEl.classList.add("hidden");
@@ -462,7 +461,13 @@
           const data = snap.data();
           state = {
             maxMembers: data.maxMembers || 10,
-            budget: data.budget || { house: 0, food: 95, drinks: 60, firstPct: 65 },
+            budget: {
+              house: data.budget?.house ?? 300,
+              deposit: data.budget?.deposit ?? 100,
+              food: data.budget?.food ?? 75,
+              drinks: data.budget?.drinks ?? 60,
+              firstPct: data.budget?.firstPct ?? 65
+            },
             members: data.members || [],
             spectators: data.spectators || [],
             blockedUids: data.blockedUids || [],
@@ -486,7 +491,6 @@
           return;
         }
 
-        // Registrar usuario nuevo como Participante (si hay cupo) o Espectador
         if (!initializedUser && authUser) {
           initializedUser = true;
           const inMembers = state.members.find(m => m.uid === authUser.uid);
@@ -547,7 +551,18 @@
       await setDoc(tripDocRef, state, { merge: true });
     }
 
-    // Acciones Admin
+    // Admin: restaurar borrador completo
+    window.seedDraftAdmin = async () => {
+      if (!isAdmin) return;
+      state.budget = { house: 300, deposit: 100, food: 75, drinks: 60, firstPct: 65 };
+      state.schedule = DEFAULT_SCHEDULE;
+      state.checklist = DEFAULT_CHECKLIST;
+      state.games = DEFAULT_GAMES;
+      state.awards = DEFAULT_AWARDS;
+      await persistState();
+      showToast("Borrador base cargado en vivo 🔄");
+    };
+
     window.updateMaxMembersAdmin = async () => {
       if (!isAdmin) return;
       const val = parseInt(document.getElementById("maxMembersInput").value, 10);
@@ -628,7 +643,6 @@
       showToast("Perfil actualizado");
     };
 
-    // Tabs
     window.switchTab = (tabId) => {
       document.querySelectorAll(".view-section").forEach(el => el.classList.add("hidden"));
       document.getElementById(`view-${tabId}`).classList.remove("hidden");
@@ -641,7 +655,6 @@
       active.classList.remove("bg-white/10");
     };
 
-    // Comisiones
     window.joinDupla = async (duplaId) => {
       if (!guardParticipantAction()) return;
       const me = getMe();
@@ -654,7 +667,6 @@
       showToast(me.dupla ? `Te apuntaste a la Dupla ${duplaId}` : "Saliste de la dupla");
     };
 
-    // Calendario editable
     window.editScheduleField = async (id, field, currentVal) => {
       if (!guardParticipantAction()) return;
       const val = prompt(`Editar ${field === "menu" ? "Menú" : "Plan / Actividad"}:`, currentVal);
@@ -677,11 +689,11 @@
       showToast("Bloque agregado al calendario");
     };
 
-    // Costos configurables
     window.saveBudgetConfig = async () => {
       if (!guardParticipantAction()) return;
       state.budget = {
         house: Math.max(0, parseFloat(document.getElementById("cfgHouse").value) || 0),
+        deposit: Math.max(0, parseFloat(document.getElementById("cfgDeposit").value) || 0),
         food: Math.max(0, parseFloat(document.getElementById("cfgFood").value) || 0),
         drinks: Math.max(0, parseFloat(document.getElementById("cfgDrinks").value) || 0),
         firstPct: Math.min(100, Math.max(10, parseFloat(document.getElementById("cfgFirstPct").value) || 65))
@@ -717,7 +729,6 @@
       await persistState();
     };
 
-    // Checklist editable
     window.toggleCheck = async (id) => {
       if (!guardParticipantAction()) return;
       const me = getMe();
@@ -758,7 +769,6 @@
       await persistState();
     };
 
-    // Juegos y Votación Anónima
     window.updateScore = async (duplaId, delta) => {
       if (!guardParticipantAction()) return;
       state.scores[duplaId] = Math.max(0, (state.scores[duplaId] || 0) + delta);
@@ -794,7 +804,6 @@
       showToast("Voto anónimo registrado 🔒");
     };
 
-    // Renderizado
     function renderAll() {
       renderDuplas();
       renderSchedule();
@@ -853,7 +862,6 @@
         </span>
       `).join("");
 
-      // Render Espectadores
       const specSec = document.getElementById("spectatorsSection");
       if (state.spectators.length > 0) {
         specSec.classList.remove("hidden");
@@ -910,20 +918,23 @@
       const canEdit = isParticipant();
       const b = state.budget;
       document.getElementById("cfgHouse").value = b.house;
+      document.getElementById("cfgDeposit").value = b.deposit;
       document.getElementById("cfgFood").value = b.food;
       document.getElementById("cfgDrinks").value = b.drinks;
       document.getElementById("cfgFirstPct").value = b.firstPct;
 
-      ["cfgHouse", "cfgFood", "cfgDrinks", "cfgFirstPct"].forEach(id => {
+      ["cfgHouse", "cfgDeposit", "cfgFood", "cfgDrinks", "cfgFirstPct"].forEach(id => {
         document.getElementById(id).disabled = !canEdit;
       });
 
       const count = Math.max(state.members.length, 1);
+      const sharedFixed = b.house + b.deposit;
+      const sharedPerPerson = Math.round(sharedFixed / count);
       const extraTotal = state.expenses.reduce((acc, e) => acc + e.amount, 0);
       const extraPerPerson = Math.round(extraTotal / count);
 
-      const baseNoDrink = b.house + b.food + extraPerPerson;
-      const baseDrink = b.house + b.food + b.drinks + extraPerPerson;
+      const baseNoDrink = sharedPerPerson + b.food + extraPerPerson;
+      const baseDrink = sharedPerPerson + b.food + b.drinks + extraPerPerson;
 
       let totalExpected = 0;
       let totalCollected = 0;
@@ -956,6 +967,7 @@
       }).join("");
 
       document.getElementById("statTotalBudget").textContent = `S/ ${totalExpected}`;
+      document.getElementById("statDepositNote").textContent = `Casa S/ ${b.house} + Garantía S/ ${b.deposit} (devuelta al salir)`;
       document.getElementById("statCollected").textContent = `S/ ${totalCollected}`;
       document.getElementById("statPending").textContent = `Falta recaudar: S/ ${Math.max(0, totalExpected - totalCollected)}`;
       document.getElementById("statPerPerson").textContent = `S/ ${baseDrink} / S/ ${baseNoDrink}`;
@@ -1065,7 +1077,7 @@
       }).join("\n");
 
       const pendingItems = state.checklist.filter(i => !i.doneBy).slice(0, 6).map(i => `⬜ ${i.text}`).join("\n");
-      const text = `🏖️ *PLAYA SUNAT PRACTITONTOS* 🍻\n\n*Comisiones:*\n${duplasTxt}\n\n*Falta por asignar en checklist:*\n${pendingItems || "✅ ¡Todo asignado!"}\n\n👉 Entren con su Google aquí: https://slinareslie.github.io/playa-sunat-practitontos/`;
+      const text = `🏖️ *PLAYA SUNAT PRACTITONTOS* 🍻\n🏠 Casa: S/ ${state.budget.house} + Garantía: S/ ${state.budget.deposit}\n\n*Comisiones:*\n${duplasTxt}\n\n*Falta por asignar en checklist:*\n${pendingItems || "✅ ¡Todo asignado!"}\n\n👉 Entren con su Google aquí: https://slinareslie.github.io/playa-sunat-practitontos/`;
       navigator.clipboard.writeText(text);
       showToast("Resumen copiado para WhatsApp");
     };
