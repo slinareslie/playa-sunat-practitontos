@@ -970,9 +970,13 @@
       }
 
       function isParticipant() {
-        return Boolean(
-          isAdmin ||
-          (authUser && state.members.some((m) => m.uid === authUser.uid)),
+        if (isAdmin) return true;
+        if (!authUser) return false;
+        if (state.members.some((m) => m.uid === authUser.uid)) return true;
+        // Si aún hay cupos libres y no está en espectadores ni bloqueado, ya es participante
+        return (
+          state.members.length < state.maxMembers &&
+          !state.spectators.some((s) => s.uid === authUser.uid)
         );
       }
 
