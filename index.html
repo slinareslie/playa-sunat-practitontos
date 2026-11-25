@@ -18,9 +18,9 @@
   <!-- Pantalla de Login con Google -->
   <div id="authOverlay" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-100 text-center">
-      <span class="inline-block bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-3">Operativo Verano • 10 Cupos</span>
+      <span class="inline-block bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-3">Operativo Verano</span>
       <h2 class="text-2xl font-extrabold text-slate-900">Playa Sunat Practitontos 🏖️</h2>
-      <p class="text-sm text-slate-500 mt-2">Inicia sesión con tu cuenta de Google para evitar duplicados, apuntarte a una dupla, cuadrar yapes y votar de forma anónima.</p>
+      <p class="text-sm text-slate-500 mt-2">Inicia sesión con tu cuenta de Google para apuntarte a una dupla, cuadrar yapes, marcar el checklist y votar de forma anónima.</p>
 
       <button id="googleLoginBtn" onclick="loginWithGoogle()"
         class="mt-6 w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-800 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-200 shadow-sm transition">
@@ -29,7 +29,7 @@
       </button>
 
       <p id="authErrorMsg" class="text-xs text-rose-600 font-semibold mt-3 hidden"></p>
-      <p class="text-[11px] text-slate-400 mt-4">1 cuenta = 1 lugar en el viaje (máx. 10 participantes).</p>
+      <p class="text-[11px] text-slate-400 mt-4">1 cuenta = 1 perfil sin duplicados.</p>
     </div>
   </div>
 
@@ -43,7 +43,7 @@
           <label class="text-xs font-bold text-slate-600 uppercase">Apodo / Nombre visible</label>
           <input id="editNicknameInput" type="text" maxlength="25" class="mt-1 w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-semibold text-sm outline-none focus:border-sky-500" />
         </div>
-        <label class="flex items-center gap-2.5 text-sm text-slate-700 cursor-pointer pt-1">
+        <label id="editDrinksWrap" class="flex items-center gap-2.5 text-sm text-slate-700 cursor-pointer pt-1">
           <input id="editDrinksInput" type="checkbox" class="w-4 h-4 accent-sky-600 rounded" />
           <span>Sí tomo alcohol (entra en cuota de trago)</span>
         </label>
@@ -61,13 +61,14 @@
     <div class="max-w-5xl mx-auto px-4 py-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <span class="bg-amber-400 text-slate-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Lun PM – Mié PM</span>
             <span id="syncBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/15 text-sky-100 flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400" id="syncDot"></span>
               <span id="syncText">En vivo</span>
             </span>
             <span id="adminBadge" class="hidden bg-rose-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Admin</span>
+            <span id="spectatorBadge" class="hidden bg-slate-900/80 text-amber-300 border border-amber-400/40 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">👀 Modo Espectador</span>
           </div>
           <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight mt-1">Playa Sunat Practitontos 🏖️🍻</h1>
         </div>
@@ -96,24 +97,56 @@
 
   <main class="max-w-5xl mx-auto px-4 pt-6">
 
+    <!-- Banner Modo Espectador -->
+    <div id="spectatorBanner" class="hidden mb-5 bg-amber-50 border border-amber-300 rounded-2xl p-4 text-sm text-amber-950 flex items-center justify-between gap-3">
+      <div>
+        <p class="font-extrabold">👀 Estás en Modo Espectador (Cupos llenos por ahora)</p>
+        <p class="text-xs text-amber-800 mt-0.5">Puedes ver toda la organización en tiempo real. Si te vas a sumar al viaje, avisa al Admin para que amplíe el cupo o te pase a Participante.</p>
+      </div>
+    </div>
+
     <!-- TAB 1: COMISIONES -->
     <section id="view-comisiones" class="view-section space-y-5">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-lg font-extrabold text-slate-900">Reparto de Comisiones (Máx. 2 por dupla)</h2>
-          <p class="text-sm text-slate-500">Apúntate a una dupla. Eso define tu compra previa y tus turnos de cocina y limpieza.</p>
+          <h2 class="text-lg font-extrabold text-slate-900">Reparto de Comisiones (5 Grupos)</h2>
+          <p class="text-sm text-slate-500">Apúntate a una comisión. Define tu compra previa y tus turnos de cocina y limpieza.</p>
         </div>
-        <div class="bg-sky-50 border border-sky-200 px-4 py-2 rounded-xl text-right">
-          <span class="text-xs font-bold text-sky-700 uppercase block">Cupos Ocupados</span>
-          <span id="memberCounter" class="text-xl font-extrabold text-sky-900">0 / 10</span>
+
+        <div class="flex items-center gap-3">
+          <!-- Control de Cupos solo visible para Admin -->
+          <div id="adminCapacityControl" class="hidden bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl">
+            <label class="text-[10px] font-extrabold text-rose-700 uppercase block">Tope Cupos (Admin)</label>
+            <div class="flex items-center gap-1.5 mt-1">
+              <input id="maxMembersInput" type="number" min="2" max="30" class="w-16 px-2 py-1 rounded-lg border border-rose-300 text-sm font-extrabold text-center bg-white" />
+              <button onclick="updateMaxMembersAdmin()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold px-2.5 py-1.5 rounded-lg">OK</button>
+            </div>
+          </div>
+
+          <div class="bg-sky-50 border border-sky-200 px-4 py-2 rounded-xl text-right">
+            <span class="text-xs font-bold text-sky-700 uppercase block">Cupos Ocupados</span>
+            <span id="memberCounter" class="text-xl font-extrabold text-sky-900">0 / 10</span>
+          </div>
         </div>
       </div>
 
       <div id="duplasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
+      <!-- Lista de Participantes Activos -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3">👥 Practitontos Registrados (1 por cuenta Google)</h3>
+        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3">👥 Participantes Confirmados</h3>
         <div id="allMembersChips" class="flex flex-wrap gap-2 text-sm text-slate-500"></div>
+      </div>
+
+      <!-- Lista de Espectadores / En espera -->
+      <div id="spectatorsSection" class="hidden bg-white rounded-2xl p-5 shadow-sm border border-amber-200">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="text-sm font-extrabold text-amber-800 uppercase tracking-wider">👀 Espectadores / En Lista de Espera</h3>
+            <p class="text-xs text-slate-500">Solo lectura hasta que el Admin los apruebe como participantes.</p>
+          </div>
+        </div>
+        <div id="spectatorsList" class="space-y-2"></div>
       </div>
     </section>
 
@@ -125,7 +158,7 @@
             <h2 class="text-lg font-extrabold text-slate-900">Calendario de Comidas y Turnos (Editable)</h2>
             <p class="text-sm text-slate-500">Regla de oro: <strong>quien cocina NO lava ese turno</strong>. Puedes editar cualquier menú o plan.</p>
           </div>
-          <button onclick="addScheduleSlot()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl">+ Agregar bloque</button>
+          <button onclick="addScheduleSlot()" class="participant-only bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl">+ Agregar bloque</button>
         </div>
         <div id="scheduleList" class="space-y-3"></div>
       </div>
@@ -140,7 +173,7 @@
             <h3 class="text-base font-extrabold text-slate-900">⚙️ Configuración de Costos por Persona (Editable en vivo)</h3>
             <p class="text-xs text-slate-500">Ajusta los montos reales y el sistema recalcula las cuotas de todos al instante.</p>
           </div>
-          <button onclick="saveBudgetConfig()" class="bg-slate-900 hover:bg-sky-700 text-white text-xs font-extrabold px-4 py-2 rounded-xl transition">Guardar montos</button>
+          <button onclick="saveBudgetConfig()" class="participant-only bg-slate-900 hover:bg-sky-700 text-white text-xs font-extrabold px-4 py-2 rounded-xl transition">Guardar montos</button>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
           <div>
@@ -191,7 +224,7 @@
       <!-- Gastos extra en vivo -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <h3 class="text-base font-extrabold text-slate-900 mb-3">🧾 Gastos Extra / Compras de Última Hora (se divide entre todos)</h3>
-        <div class="flex flex-col sm:flex-row gap-2 mb-4">
+        <div class="participant-only flex flex-col sm:flex-row gap-2 mb-4">
           <input id="expenseDesc" type="text" placeholder="Ej. 3 bolsas de hielo + pollo a la brasa" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:border-sky-500" />
           <input id="expenseAmount" type="number" placeholder="Monto S/" class="w-full sm:w-32 px-3 py-2 rounded-xl border border-slate-300 text-sm outline-none focus:border-sky-500" />
           <button onclick="addExtraExpense()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition">+ Sumar</button>
@@ -211,7 +244,7 @@
           <span id="checklistProgress" class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1.5 rounded-full">0 / 0 listos</span>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-2 mb-5">
+        <div class="participant-only flex flex-col sm:flex-row gap-2 mb-5">
           <select id="newItemCat" class="px-3 py-2 rounded-xl border border-slate-300 text-sm font-semibold bg-white">
             <option value="Trago y Hielo">🍻 Trago y Hielo</option>
             <option value="Comida y Parrilla">🥩 Comida y Parrilla</option>
@@ -234,10 +267,8 @@
         <div id="scoreboardGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4"></div>
 
         <div class="mt-5 pt-4 border-t border-slate-100">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-extrabold uppercase text-slate-500">Lista de Pruebas / Juegos</h3>
-          </div>
-          <div class="flex gap-2 mb-3">
+          <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-2">Lista de Pruebas / Juegos</h3>
+          <div class="participant-only flex gap-2 mb-3">
             <input id="newGameInput" type="text" placeholder="Agregar prueba (ej. Yo Nunca edición SUNAT)..." class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs" />
             <button onclick="addGameItem()" class="bg-slate-900 text-white text-xs font-bold px-3.5 py-2 rounded-xl">+ Juego</button>
           </div>
@@ -255,7 +286,7 @@
         </div>
 
         <!-- Agregar nuevo premio -->
-        <div class="flex flex-col sm:flex-row gap-2 mb-5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+        <div class="participant-only flex flex-col sm:flex-row gap-2 mb-5 bg-slate-50 p-3 rounded-xl border border-slate-200">
           <input id="newAwardTitle" type="text" placeholder="Nuevo premio (ej. Premio 'Tardanza justificada')" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold bg-white" />
           <input id="newAwardDesc" type="text" placeholder="Descripción breve..." class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white" />
           <button onclick="addAwardCategory()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold px-4 py-2 rounded-lg">+ Crear Premio</button>
@@ -291,7 +322,6 @@
     // =========================================================================
 
     const ADMIN_EMAILS = ["sebastianlinares2409@gmail.com", "slinareslie@unjbg.edu.pe"];
-    const MAX_MEMBERS = 10;
 
     const DUPLAS_META = [
       { id: "A", title: "Dupla A • Tesorería y Casa", desc: "Recibe Yapes, cuadra boletas, llaves, check-in y garantía.", color: "border-sky-500 bg-sky-50/40" },
@@ -351,22 +381,42 @@
     let unsubscribeSnapshot = null;
 
     let state = {
+      maxMembers: 10,
       budget: { house: 0, food: 95, drinks: 60, firstPct: 65 },
-      members: [], // { uid, email, name, drinks, dupla, paid1, paid2 }
+      members: [],     // { uid, email, name, drinks, dupla, paid1, paid2 }
+      spectators: [],  // { uid, email, name }
+      blockedUids: [], // UIDs bloqueados por admin
+      activeUids: [],  // Espejo de UIDs con permiso de escritura
       schedule: DEFAULT_SCHEDULE,
       checklist: DEFAULT_CHECKLIST,
       expenses: [],
       games: DEFAULT_GAMES,
       scores: { A: 0, B: 0, C: 0, D: 0, E: 0 },
       awards: DEFAULT_AWARDS,
-      votes: {} // { [awardId]: { [voterUid]: candidateUid } }
+      votes: {}
     };
 
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.classList.remove("opacity-0");
-      setTimeout(() => t.classList.add("opacity-0"), 2600);
+      setTimeout(() => t.classList.add("opacity-0"), 2800);
+    }
+
+    function isParticipant() {
+      return Boolean(isAdmin || (authUser && state.members.some(m => m.uid === authUser.uid)));
+    }
+
+    function syncActiveUids() {
+      state.activeUids = state.members.map(m => m.uid);
+    }
+
+    function guardParticipantAction() {
+      if (!isParticipant()) {
+        showToast("Modo Espectador: pídele al Admin que te pase a Participante 👀");
+        return false;
+      }
+      return true;
     }
 
     // Autenticación Google
@@ -396,7 +446,10 @@
 
       authUser = user;
       isAdmin = ADMIN_EMAILS.includes((user.email || "").toLowerCase());
-      if (isAdmin) document.getElementById("adminBadge").classList.remove("hidden");
+      if (isAdmin) {
+        document.getElementById("adminBadge").classList.remove("hidden");
+        document.getElementById("adminCapacityControl").classList.remove("hidden");
+      }
       document.getElementById("authOverlay").classList.add("hidden");
 
       startRealtimeSync();
@@ -408,8 +461,12 @@
         if (snap.exists()) {
           const data = snap.data();
           state = {
+            maxMembers: data.maxMembers || 10,
             budget: data.budget || { house: 0, food: 95, drinks: 60, firstPct: 65 },
             members: data.members || [],
+            spectators: data.spectators || [],
+            blockedUids: data.blockedUids || [],
+            activeUids: data.activeUids || [],
             schedule: data.schedule && data.schedule.length ? data.schedule : DEFAULT_SCHEDULE,
             checklist: data.checklist && data.checklist.length ? data.checklist : DEFAULT_CHECKLIST,
             expenses: data.expenses || [],
@@ -419,18 +476,25 @@
             votes: data.votes || {}
           };
         } else {
+          syncActiveUids();
           await persistState();
         }
 
-        // Registrar cuenta Google si aún no está y hay cupo (< 10)
+        if (authUser && state.blockedUids.includes(authUser.uid) && !isAdmin) {
+          alert("Tu acceso a este grupo fue bloqueado por el administrador.");
+          await signOut(auth);
+          return;
+        }
+
+        // Registrar usuario nuevo como Participante (si hay cupo) o Espectador
         if (!initializedUser && authUser) {
           initializedUser = true;
-          const existing = state.members.find(m => m.uid === authUser.uid);
-          if (!existing) {
-            if (state.members.length >= MAX_MEMBERS) {
-              showToast("⚠️ Ya se llenaron los 10 cupos del viaje");
-            } else {
-              const shortName = (authUser.displayName || authUser.email.split("@")[0]).split(" ").slice(0, 2).join(" ");
+          const inMembers = state.members.find(m => m.uid === authUser.uid);
+          const inSpecs = state.spectators.find(s => s.uid === authUser.uid);
+          const shortName = (authUser.displayName || authUser.email.split("@")[0]).split(" ").slice(0, 2).join(" ");
+
+          if (!inMembers && !inSpecs) {
+            if (state.members.length < state.maxMembers || isAdmin) {
               state.members.push({
                 uid: authUser.uid,
                 email: authUser.email,
@@ -440,13 +504,32 @@
                 paid1: false,
                 paid2: false
               });
+              syncActiveUids();
               await persistState();
+            } else {
+              state.spectators.push({
+                uid: authUser.uid,
+                email: authUser.email,
+                name: shortName
+              });
+              syncActiveUids();
+              await persistState();
+              showToast(`Cupos llenos (${state.maxMembers}/${state.maxMembers}): entraste como Espectador 👀`);
             }
           }
         }
 
         const me = getMe();
-        document.getElementById("headerUserName").textContent = me ? me.name : (authUser.displayName || "Visitante");
+        const mySpec = getMySpectator();
+        document.getElementById("headerUserName").textContent = me ? me.name : (mySpec ? mySpec.name : (authUser.displayName || "Visitante"));
+
+        const canEdit = isParticipant();
+        document.getElementById("spectatorBadge").classList.toggle("hidden", canEdit);
+        document.getElementById("spectatorBanner").classList.toggle("hidden", canEdit);
+        document.querySelectorAll(".participant-only").forEach(el => {
+          el.classList.toggle("hidden", !canEdit);
+        });
+
         renderAll();
       });
     }
@@ -455,39 +538,94 @@
       return authUser ? state.members.find(m => m.uid === authUser.uid) : null;
     }
 
+    function getMySpectator() {
+      return authUser ? state.spectators.find(s => s.uid === authUser.uid) : null;
+    }
+
     async function persistState() {
+      syncActiveUids();
       await setDoc(tripDocRef, state, { merge: true });
     }
+
+    // Acciones Admin
+    window.updateMaxMembersAdmin = async () => {
+      if (!isAdmin) return;
+      const val = parseInt(document.getElementById("maxMembersInput").value, 10);
+      if (isNaN(val) || val < 2 || val > 30) return showToast("Elige un cupo entre 2 y 30");
+      state.maxMembers = val;
+      await persistState();
+      showToast(`Tope actualizado a ${val} participantes`);
+    };
+
+    window.promoteSpectatorAdmin = async (uid) => {
+      if (!isAdmin) return;
+      const idx = state.spectators.findIndex(s => s.uid === uid);
+      if (idx === -1) return;
+      const [spec] = state.spectators.splice(idx, 1);
+      if (state.members.length >= state.maxMembers) {
+        state.maxMembers = state.members.length + 1;
+      }
+      state.members.push({
+        uid: spec.uid,
+        email: spec.email,
+        name: spec.name,
+        drinks: true,
+        dupla: "",
+        paid1: false,
+        paid2: false
+      });
+      await persistState();
+      showToast(`${spec.name} ahora es Participante activo ✅`);
+    };
+
+    window.demoteMemberAdmin = async (uid) => {
+      if (!isAdmin || uid === authUser?.uid) return;
+      const idx = state.members.findIndex(m => m.uid === uid);
+      if (idx === -1) return;
+      const [mem] = state.members.splice(idx, 1);
+      state.spectators.push({ uid: mem.uid, email: mem.email, name: mem.name });
+      await persistState();
+      showToast(`${mem.name} pasó a Modo Espectador 👀`);
+    };
+
+    window.blockUserAdmin = async (uid) => {
+      if (!isAdmin || uid === authUser?.uid) return;
+      if (!confirm("¿Bloquear a este usuario para que no pueda entrar ni ver la página?")) return;
+      state.members = state.members.filter(m => m.uid !== uid);
+      state.spectators = state.spectators.filter(s => s.uid !== uid);
+      if (!state.blockedUids.includes(uid)) state.blockedUids.push(uid);
+      await persistState();
+      showToast("Usuario bloqueado 🚫");
+    };
 
     // Perfil
     window.openProfileModal = () => {
       const me = getMe();
-      if (!me) return showToast("Cupos llenos (10/10)");
-      document.getElementById("editNicknameInput").value = me.name;
-      document.getElementById("editDrinksInput").checked = me.drinks;
+      const spec = getMySpectator();
+      const target = me || spec;
+      if (!target) return;
+      document.getElementById("editNicknameInput").value = target.name;
+      document.getElementById("editDrinksWrap").classList.toggle("hidden", !me);
+      if (me) document.getElementById("editDrinksInput").checked = me.drinks;
       document.getElementById("profileModal").classList.remove("hidden");
     };
 
     window.closeProfileModal = () => document.getElementById("profileModal").classList.add("hidden");
 
     window.saveProfileChanges = async () => {
-      const me = getMe();
-      if (!me) return;
       const newName = document.getElementById("editNicknameInput").value.trim();
       if (!newName) return showToast("Escribe un nombre válido");
-      me.name = newName;
-      me.drinks = document.getElementById("editDrinksInput").checked;
+      const me = getMe();
+      const spec = getMySpectator();
+      if (me) {
+        me.name = newName;
+        me.drinks = document.getElementById("editDrinksInput").checked;
+      } else if (spec) {
+        spec.name = newName;
+      }
       closeProfileModal();
       await persistState();
       showToast("Perfil actualizado");
-    };
-
-    window.removeMemberAdmin = async (uid) => {
-      if (!isAdmin) return;
-      if (!confirm("¿Eliminar este participante del viaje?")) return;
-      state.members = state.members.filter(m => m.uid !== uid);
-      await persistState();
-      showToast("Participante eliminado");
     };
 
     // Tabs
@@ -505,10 +643,12 @@
 
     // Comisiones
     window.joinDupla = async (duplaId) => {
+      if (!guardParticipantAction()) return;
       const me = getMe();
-      if (!me) return showToast("No tienes cupo asignado (10/10 llenos)");
+      if (!me) return;
+      const maxPerDupla = Math.max(2, Math.ceil(state.maxMembers / 5));
       const inDupla = state.members.filter(m => m.dupla === duplaId && m.uid !== me.uid);
-      if (inDupla.length >= 2) return showToast(`La Dupla ${duplaId} ya tiene 2 integrantes`);
+      if (inDupla.length >= maxPerDupla) return showToast(`La Dupla ${duplaId} ya alcanzó su máximo (${maxPerDupla})`);
       me.dupla = me.dupla === duplaId ? "" : duplaId;
       await persistState();
       showToast(me.dupla ? `Te apuntaste a la Dupla ${duplaId}` : "Saliste de la dupla");
@@ -516,6 +656,7 @@
 
     // Calendario editable
     window.editScheduleField = async (id, field, currentVal) => {
+      if (!guardParticipantAction()) return;
       const val = prompt(`Editar ${field === "menu" ? "Menú" : "Plan / Actividad"}:`, currentVal);
       if (val === null || !val.trim()) return;
       const slot = state.schedule.find(s => s.id === id);
@@ -526,6 +667,7 @@
     };
 
     window.addScheduleSlot = async () => {
+      if (!guardParticipantAction()) return;
       const time = prompt("Día y momento (ej. Martes Madrugada):");
       if (!time || !time.trim()) return;
       const menu = prompt("Menú o snack:", "Bajona / Sándwiches") || "Por definir";
@@ -537,6 +679,7 @@
 
     // Costos configurables
     window.saveBudgetConfig = async () => {
+      if (!guardParticipantAction()) return;
       state.budget = {
         house: Math.max(0, parseFloat(document.getElementById("cfgHouse").value) || 0),
         food: Math.max(0, parseFloat(document.getElementById("cfgFood").value) || 0),
@@ -548,6 +691,7 @@
     };
 
     window.togglePayment = async (uid, field) => {
+      if (!guardParticipantAction()) return;
       const m = state.members.find(x => x.uid === uid);
       if (!m) return;
       m[field] = !m[field];
@@ -555,6 +699,7 @@
     };
 
     window.addExtraExpense = async () => {
+      if (!guardParticipantAction()) return;
       const me = getMe();
       const desc = document.getElementById("expenseDesc").value.trim();
       const amount = parseFloat(document.getElementById("expenseAmount").value);
@@ -567,12 +712,14 @@
     };
 
     window.deleteExtraExpense = async (id) => {
+      if (!guardParticipantAction()) return;
       state.expenses = state.expenses.filter(e => e.id !== id);
       await persistState();
     };
 
     // Checklist editable
     window.toggleCheck = async (id) => {
+      if (!guardParticipantAction()) return;
       const me = getMe();
       if (!me) return;
       const item = state.checklist.find(i => i.id === id);
@@ -582,6 +729,7 @@
     };
 
     window.addChecklistItem = async () => {
+      if (!guardParticipantAction()) return;
       const cat = document.getElementById("newItemCat").value;
       const text = document.getElementById("newItemText").value.trim();
       if (!text) return;
@@ -593,6 +741,7 @@
 
     window.editChecklistItem = async (id, event) => {
       event.stopPropagation();
+      if (!guardParticipantAction()) return;
       const item = state.checklist.find(i => i.id === id);
       if (!item) return;
       const updated = prompt("Editar ítem:", item.text);
@@ -604,17 +753,20 @@
 
     window.deleteChecklistItem = async (id, event) => {
       event.stopPropagation();
+      if (!guardParticipantAction()) return;
       state.checklist = state.checklist.filter(i => i.id !== id);
       await persistState();
     };
 
-    // Juegos y Votación Anónima por UID
+    // Juegos y Votación Anónima
     window.updateScore = async (duplaId, delta) => {
+      if (!guardParticipantAction()) return;
       state.scores[duplaId] = Math.max(0, (state.scores[duplaId] || 0) + delta);
       await persistState();
     };
 
     window.addGameItem = async () => {
+      if (!guardParticipantAction()) return;
       const val = document.getElementById("newGameInput").value.trim();
       if (!val) return;
       state.games.push(val);
@@ -623,6 +775,7 @@
     };
 
     window.addAwardCategory = async () => {
+      if (!guardParticipantAction()) return;
       const title = document.getElementById("newAwardTitle").value.trim();
       const desc = document.getElementById("newAwardDesc").value.trim();
       if (!title) return showToast("Escribe el nombre del premio");
@@ -634,7 +787,7 @@
     };
 
     window.castAnonymousVote = async (awardId, candidateUid) => {
-      if (!authUser || !candidateUid) return;
+      if (!guardParticipantAction() || !authUser || !candidateUid) return;
       if (!state.votes[awardId]) state.votes[awardId] = {};
       state.votes[awardId][authUser.uid] = candidateUid;
       await persistState();
@@ -651,8 +804,14 @@
     }
 
     function renderDuplas() {
-      document.getElementById("memberCounter").textContent = `${state.members.length} / ${MAX_MEMBERS}`;
+      document.getElementById("memberCounter").textContent = `${state.members.length} / ${state.maxMembers}`;
+      if (isAdmin) {
+        document.getElementById("maxMembersInput").value = state.maxMembers;
+      }
+
+      const maxPerDupla = Math.max(2, Math.ceil(state.maxMembers / 5));
       const me = getMe();
+      const canEdit = isParticipant();
 
       document.getElementById("duplasGrid").innerHTML = DUPLAS_META.map(d => {
         const assigned = state.members.filter(m => m.dupla === d.id);
@@ -662,7 +821,7 @@
             <div>
               <div class="flex items-center justify-between">
                 <h3 class="font-extrabold text-slate-900 text-base">${d.title}</h3>
-                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${assigned.length}/2</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">${assigned.length}/${maxPerDupla}</span>
               </div>
               <p class="text-xs text-slate-500 mt-1">${d.desc}</p>
               <div class="mt-3 space-y-1.5">
@@ -674,10 +833,12 @@
                 `).join("") : `<div class="text-xs italic text-slate-400 py-2">Cupos libres...</div>`}
               </div>
             </div>
-            <button onclick="joinDupla('${d.id}')"
-              class="mt-4 w-full py-2 rounded-xl text-xs font-extrabold transition ${isMine ? "bg-rose-100 text-rose-700 hover:bg-rose-200" : "bg-slate-900 text-white hover:bg-sky-700"}">
-              ${isMine ? "Salir de esta dupla" : `Apuntarme a Dupla ${d.id}`}
-            </button>
+            ${canEdit ? `
+              <button onclick="joinDupla('${d.id}')"
+                class="mt-4 w-full py-2 rounded-xl text-xs font-extrabold transition ${isMine ? "bg-rose-100 text-rose-700 hover:bg-rose-200" : "bg-slate-900 text-white hover:bg-sky-700"}">
+                ${isMine ? "Salir de esta dupla" : `Apuntarme a Dupla ${d.id}`}
+              </button>
+            ` : ""}
           </div>
         `;
       }).join("");
@@ -685,9 +846,34 @@
       document.getElementById("allMembersChips").innerHTML = state.members.map(m => `
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200">
           ${m.name} ${m.dupla ? `(Dupla ${m.dupla})` : ""}
-          ${isAdmin && m.uid !== authUser?.uid ? `<button onclick="removeMemberAdmin('${m.uid}')" title="Eliminar usuario" class="text-rose-500 hover:text-rose-700 ml-1">✕</button>` : ""}
+          ${isAdmin && m.uid !== authUser?.uid ? `
+            <button onclick="demoteMemberAdmin('${m.uid}')" title="Pasar a espectador" class="text-amber-600 hover:text-amber-800 ml-1">👀</button>
+            <button onclick="blockUserAdmin('${m.uid}')" title="Bloquear usuario" class="text-rose-600 hover:text-rose-800 ml-0.5">🚫</button>
+          ` : ""}
         </span>
       `).join("");
+
+      // Render Espectadores
+      const specSec = document.getElementById("spectatorsSection");
+      if (state.spectators.length > 0) {
+        specSec.classList.remove("hidden");
+        document.getElementById("spectatorsList").innerHTML = state.spectators.map(s => `
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-amber-50/70 px-3 py-2 rounded-xl border border-amber-200 text-xs">
+            <div>
+              <span class="font-extrabold text-slate-800">👀 ${s.name}</span>
+              <span class="text-slate-400 ml-1">(${s.email})</span>
+            </div>
+            ${isAdmin ? `
+              <div class="flex gap-1.5">
+                <button onclick="promoteSpectatorAdmin('${s.uid}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg">✅ Pasar a Participante</button>
+                <button onclick="blockUserAdmin('${s.uid}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2.5 py-1 rounded-lg">🚫 Bloquear</button>
+              </div>
+            ` : `<span class="text-amber-700 font-semibold">Solo lectura</span>`}
+          </div>
+        `).join("");
+      } else {
+        specSec.classList.add("hidden");
+      }
     }
 
     function getDuplaNames(code) {
@@ -698,17 +884,18 @@
     }
 
     function renderSchedule() {
+      const canEdit = isParticipant();
       document.getElementById("scheduleList").innerHTML = state.schedule.map(s => `
         <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div class="space-y-1">
             <span class="inline-block bg-sky-100 text-sky-800 text-xs font-extrabold px-2.5 py-0.5 rounded-md">${s.time}</span>
             <div class="flex items-center gap-2">
               <h4 class="font-bold text-slate-900 text-sm">${s.menu}</h4>
-              <button onclick="editScheduleField('${s.id}', 'menu', '${s.menu.replace(/'/g, "\\'")}')" class="text-[11px] text-sky-600 hover:underline font-bold">✏️ Editar</button>
+              ${canEdit ? `<button onclick="editScheduleField('${s.id}', 'menu', '${s.menu.replace(/'/g, "\\'")}')" class="text-[11px] text-sky-600 hover:underline font-bold">✏️ Editar</button>` : ""}
             </div>
             <div class="flex items-center gap-2">
               <p class="text-xs text-slate-500">🎯 ${s.plan}</p>
-              <button onclick="editScheduleField('${s.id}', 'plan', '${s.plan.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-sky-600">✏️</button>
+              ${canEdit ? `<button onclick="editScheduleField('${s.id}', 'plan', '${s.plan.replace(/'/g, "\\'")}')" class="text-[11px] text-slate-400 hover:text-sky-600">✏️</button>` : ""}
             </div>
           </div>
           <div class="flex flex-wrap gap-2 text-xs font-bold shrink-0">
@@ -720,11 +907,16 @@
     }
 
     function renderPayments() {
+      const canEdit = isParticipant();
       const b = state.budget;
       document.getElementById("cfgHouse").value = b.house;
       document.getElementById("cfgFood").value = b.food;
       document.getElementById("cfgDrinks").value = b.drinks;
       document.getElementById("cfgFirstPct").value = b.firstPct;
+
+      ["cfgHouse", "cfgFood", "cfgDrinks", "cfgFirstPct"].forEach(id => {
+        document.getElementById(id).disabled = !canEdit;
+      });
 
       const count = Math.max(state.members.length, 1);
       const extraTotal = state.expenses.reduce((acc, e) => acc + e.amount, 0);
@@ -750,11 +942,11 @@
               <p class="font-bold text-sm text-slate-900">${m.name} <span class="text-xs font-normal text-slate-500">(${m.drinks ? "Con trago" : "Sin alcohol"} • Total S/ ${quota})</span></p>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="togglePayment('${m.uid}', 'paid1')"
+              <button onclick="togglePayment('${m.uid}', 'paid1')" ${!canEdit ? "disabled" : ""}
                 class="px-3 py-1.5 rounded-lg text-xs font-extrabold border transition ${m.paid1 ? "bg-emerald-500 text-white border-emerald-500" : "bg-white text-slate-600 border-slate-300"}">
                 ${m.paid1 ? "✅" : "⬜"} Cuota 1 (S/ ${q1})
               </button>
-              <button onclick="togglePayment('${m.uid}', 'paid2')"
+              <button onclick="togglePayment('${m.uid}', 'paid2')" ${!canEdit ? "disabled" : ""}
                 class="px-3 py-1.5 rounded-lg text-xs font-extrabold border transition ${m.paid2 ? "bg-emerald-500 text-white border-emerald-500" : "bg-white text-slate-600 border-slate-300"}">
                 ${m.paid2 ? "✅" : "⬜"} Cuota 2 (S/ ${q2})
               </button>
@@ -774,7 +966,7 @@
               <span><strong>${e.desc}</strong> <span class="text-xs text-slate-400">(por ${e.by})</span></span>
               <div class="flex items-center gap-3">
                 <span class="font-extrabold text-slate-800">S/ ${e.amount.toFixed(2)}</span>
-                <button onclick="deleteExtraExpense('${e.id}')" class="text-rose-500 hover:text-rose-700 text-xs font-bold">✕</button>
+                ${canEdit ? `<button onclick="deleteExtraExpense('${e.id}')" class="text-rose-500 hover:text-rose-700 text-xs font-bold">✕</button>` : ""}
               </div>
             </div>
           `).join("")
@@ -782,6 +974,7 @@
     }
 
     function renderChecklist() {
+      const canEdit = isParticipant();
       const doneCount = state.checklist.filter(i => i.doneBy).length;
       document.getElementById("checklistProgress").textContent = `${doneCount} / ${state.checklist.length} listos`;
 
@@ -799,8 +992,10 @@
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   ${item.doneBy ? `<span class="text-xs font-extrabold bg-emerald-600 text-white px-2.5 py-1 rounded-full">Lo lleva: ${item.doneBy}</span>` : ""}
-                  <button onclick="editChecklistItem('${item.id}', event)" class="text-xs text-slate-400 hover:text-sky-600 px-1" title="Editar">✏️</button>
-                  <button onclick="deleteChecklistItem('${item.id}', event)" class="text-xs text-slate-400 hover:text-rose-600 px-1" title="Borrar">🗑️</button>
+                  ${canEdit ? `
+                    <button onclick="editChecklistItem('${item.id}', event)" class="text-xs text-slate-400 hover:text-sky-600 px-1" title="Editar">✏️</button>
+                    <button onclick="deleteChecklistItem('${item.id}', event)" class="text-xs text-slate-400 hover:text-rose-600 px-1" title="Borrar">🗑️</button>
+                  ` : ""}
                 </div>
               </div>
             `).join("")}
@@ -810,14 +1005,17 @@
     }
 
     function renderGamesAndAwards() {
+      const canEdit = isParticipant();
       document.getElementById("scoreboardGrid").innerHTML = DUPLAS_META.map(d => `
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
           <span class="text-xs font-extrabold text-slate-500">DUPLA ${d.id}</span>
           <p class="text-3xl font-extrabold text-sky-700 my-1">${state.scores[d.id] || 0}</p>
-          <div class="flex justify-center gap-2 mt-2">
-            <button onclick="updateScore('${d.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold text-sm">-</button>
-            <button onclick="updateScore('${d.id}', 1)" class="w-7 h-7 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm">+</button>
-          </div>
+          ${canEdit ? `
+            <div class="flex justify-center gap-2 mt-2">
+              <button onclick="updateScore('${d.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-200 hover:bg-slate-300 font-bold text-sm">-</button>
+              <button onclick="updateScore('${d.id}', 1)" class="w-7 h-7 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm">+</button>
+            </div>
+          ` : ""}
         </div>
       `).join("");
 
@@ -825,7 +1023,6 @@
         <span class="px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-900 text-xs font-bold">🎯 ${g}</span>
       `).join("");
 
-      // Votación anónima: cuenta votos por UID candidato y resuelve nombre actual
       const uidToName = {};
       state.members.forEach(m => { uidToName[m.uid] = m.name; });
 
@@ -850,10 +1047,12 @@
                 `).join("") : `<span class="text-[11px] text-slate-400">Sin votos aún</span>`}
               </div>
             </div>
-            <select onchange="castAnonymousVote('${aw.id}', this.value)" class="mt-3 w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-bold">
-              <option value="">-- Emitir voto anónimo --</option>
-              ${state.members.map(m => `<option value="${m.uid}" ${myVoteUid === m.uid ? "selected" : ""}>${m.name}</option>`).join("")}
-            </select>
+            ${canEdit ? `
+              <select onchange="castAnonymousVote('${aw.id}', this.value)" class="mt-3 w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-bold">
+                <option value="">-- Emitir voto anónimo --</option>
+                ${state.members.map(m => `<option value="${m.uid}" ${myVoteUid === m.uid ? "selected" : ""}>${m.name}</option>`).join("")}
+              </select>
+            ` : ""}
           </div>
         `;
       }).join("");
