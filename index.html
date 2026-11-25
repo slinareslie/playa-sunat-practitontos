@@ -1317,24 +1317,59 @@
       };
 
       window.joinDupla = async (duplaId) => {
+        if (!authUser) {
+          document.getElementById("authOverlay").classList.remove("hidden");
+          return;
+        }
         if (!guardParticipantAction()) return;
-        const me = getMe();
-        if (!me) return;
+
+        let me = getMe();
+        if (!me) {
+          if (state.members.length >= state.maxMembers && !isAdmin) {
+            return showToast(
+              `Cupos llenos (${state.maxMembers}/${state.maxMembers})`,
+            );
+          }
+          const shortName = (
+            authUser.displayName || authUser.email.split("@")[0]
+          )
+            .split(" ")
+            .slice(0, 2)
+            .join(" ");
+          me = {
+            uid: authUser.uid,
+            email: authUser.email,
+            name: shortName,
+            drinks: true,
+            dupla: "",
+            paid1: false,
+            paid2: false,
+          };
+          state.members.push(me);
+        }
+
         const maxPerDupla = Math.max(2, Math.ceil(state.maxMembers / 5));
         const inDupla = state.members.filter(
           (m) => m.dupla === duplaId && m.uid !== me.uid,
         );
-        if (inDupla.length >= maxPerDupla)
+        if (inDupla.length >= maxPerDupla) {
           return showToast(
             `La Dupla ${duplaId} ya alcanzó su máximo (${maxPerDupla})`,
           );
+        }
+
         me.dupla = me.dupla === duplaId ? "" : duplaId;
-        await persistState();
-        showToast(
-          me.dupla
-            ? `Te apuntaste a la Dupla ${duplaId}`
-            : "Saliste de la dupla",
-        );
+        try {
+          await persistState();
+          showToast(
+            me.dupla
+              ? `Te apuntaste a la Dupla ${duplaId} ✅`
+              : "Saliste de la dupla",
+          );
+        } catch (err) {
+          console.error(err);
+          showToast("Error al guardar: " + err.message);
+        }
       };
 
       window.editScheduleField = async (id, field, currentVal) => {
