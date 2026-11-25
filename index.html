@@ -20,7 +20,7 @@
     <div class="bg-white rounded-3xl max-w-md w-full p-7 shadow-2xl border border-slate-100 text-center">
       <span class="inline-block bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-3">Operativo Verano</span>
       <h2 class="text-2xl font-extrabold text-slate-900">Playa Sunat Practitontos 🏖️</h2>
-      <p class="text-sm text-slate-500 mt-2">Inicia sesión con tu cuenta de Google para apuntarte a una dupla, cuadrar yapes, marcar el checklist y votar de forma anónima.</p>
+      <p class="text-sm text-slate-500 mt-2">Inicia sesión con tu cuenta de Google para apuntarte a una de las 5 comisiones, cuadrar yapes, marcar el checklist y votar de forma anónima.</p>
 
       <button id="googleLoginBtn" onclick="loginWithGoogle()"
         class="mt-6 w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-800 font-bold py-3.5 px-4 rounded-2xl border-2 border-slate-200 shadow-sm transition">
@@ -76,7 +76,7 @@
         <div class="flex items-center gap-2">
           <button onclick="openProfileModal()" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
             <span>👤</span>
-            <span id="headerUserName">Cargando...</span>
+            <span id="headerUserName">Invitado</span>
           </button>
           <button onclick="copyWhatsAppSummary()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-md transition">
             📲 WhatsApp
@@ -109,7 +109,7 @@
     <section id="view-comisiones" class="view-section space-y-5">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-lg font-extrabold text-slate-900">Reparto de Comisiones (5 Grupos)</h2>
+          <h2 class="text-lg font-extrabold text-slate-900">Reparto de Comisiones (5 Duplas)</h2>
           <p class="text-sm text-slate-500">Apúntate a una comisión. Define tu compra previa y tus turnos de cocina y limpieza.</p>
         </div>
 
@@ -132,13 +132,11 @@
 
       <div id="duplasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-      <!-- Lista de Participantes Activos -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
         <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3">👥 Participantes Confirmados</h3>
         <div id="allMembersChips" class="flex flex-wrap gap-2 text-sm text-slate-500"></div>
       </div>
 
-      <!-- Lista de Espectadores / En espera -->
       <div id="spectatorsSection" class="hidden bg-white rounded-2xl p-5 shadow-sm border border-amber-200">
         <div class="flex items-center justify-between mb-3">
           <div>
@@ -150,7 +148,7 @@
       </div>
     </section>
 
-    <!-- TAB 2: CALENDARIO Y COMIDAS (EDITABLE) -->
+    <!-- TAB 2: CALENDARIO Y COMIDAS -->
     <section id="view-calendario" class="view-section hidden space-y-4">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -164,7 +162,7 @@
       </div>
     </section>
 
-    <!-- TAB 3: COSTOS Y YAPES (CONFIGURABLE EN VIVO) -->
+    <!-- TAB 3: COSTOS Y YAPES -->
     <section id="view-cuotas" class="view-section hidden space-y-5">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <div class="flex items-center justify-between mb-3">
@@ -198,7 +196,6 @@
         </div>
       </div>
 
-      <!-- Resumen financiero -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <span class="text-xs font-bold text-slate-400 uppercase">Fondo Total Grupal</span>
@@ -217,14 +214,12 @@
         </div>
       </div>
 
-      <!-- Control de pagos por participante -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <h3 class="text-base font-extrabold text-slate-900 mb-1">Control de Yapes (Cuota 1 + Cuota 2)</h3>
         <p class="text-xs text-slate-500 mb-4">Marca cada cuota conforme vayan yapeando a Tesorería.</p>
         <div id="paymentsTable" class="divide-y divide-slate-100"></div>
       </div>
 
-      <!-- Gastos extra en vivo -->
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <h3 class="text-base font-extrabold text-slate-900 mb-3">🧾 Gastos Extra / Compras de Última Hora (se divide entre todos)</h3>
         <div class="participant-only flex flex-col sm:flex-row gap-2 mb-4">
@@ -236,7 +231,7 @@
       </div>
     </section>
 
-    <!-- TAB 4: CHECKLIST Y COMPRAS (EDITABLE) -->
+    <!-- TAB 4: CHECKLIST -->
     <section id="view-checklist" class="view-section hidden space-y-5">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -262,7 +257,7 @@
       </div>
     </section>
 
-    <!-- TAB 5: ALCOHOLIMPIADAS Y VOTACIONES ANÓNIMAS -->
+    <!-- TAB 5: JUEGOS Y VOTACIÓN -->
     <section id="view-juegos" class="view-section hidden space-y-6">
       <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
         <h2 class="text-lg font-extrabold text-slate-900">🏅 Marcador Alcoholimpiadas (Martes Tarde/Noche)</h2>
@@ -386,7 +381,6 @@
       members: [],
       spectators: [],
       blockedUids: [],
-      activeUids: [],
       schedule: DEFAULT_SCHEDULE,
       checklist: DEFAULT_CHECKLIST,
       expenses: [],
@@ -405,10 +399,6 @@
 
     function isParticipant() {
       return Boolean(isAdmin || (authUser && state.members.some(m => m.uid === authUser.uid)));
-    }
-
-    function syncActiveUids() {
-      state.activeUids = state.members.map(m => m.uid);
     }
 
     function guardParticipantAction() {
@@ -438,16 +428,25 @@
     onAuthStateChanged(auth, (user) => {
       if (!user) {
         authUser = null;
+        isAdmin = false;
+        document.getElementById("headerUserName").textContent = "Invitado";
         document.getElementById("authOverlay").classList.remove("hidden");
         if (unsubscribeSnapshot) unsubscribeSnapshot();
+        renderAll();
         return;
       }
 
       authUser = user;
       isAdmin = ADMIN_EMAILS.includes((user.email || "").toLowerCase());
+      const fallbackName = (user.displayName || user.email.split("@")[0]).split(" ").slice(0, 2).join(" ");
+      document.getElementById("headerUserName").textContent = fallbackName;
+
       if (isAdmin) {
         document.getElementById("adminBadge").classList.remove("hidden");
         document.getElementById("adminCapacityControl").classList.remove("hidden");
+      } else {
+        document.getElementById("adminBadge").classList.add("hidden");
+        document.getElementById("adminCapacityControl").classList.add("hidden");
       }
       document.getElementById("authOverlay").classList.add("hidden");
 
@@ -455,7 +454,9 @@
     });
 
     function startRealtimeSync() {
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
       let initializedUser = false;
+
       unsubscribeSnapshot = onSnapshot(tripDocRef, async (snap) => {
         if (snap.exists()) {
           const data = snap.data();
@@ -468,20 +469,18 @@
               drinks: data.budget?.drinks ?? 60,
               firstPct: data.budget?.firstPct ?? 65
             },
-            members: data.members || [],
-            spectators: data.spectators || [],
-            blockedUids: data.blockedUids || [],
-            activeUids: data.activeUids || [],
-            schedule: data.schedule && data.schedule.length ? data.schedule : DEFAULT_SCHEDULE,
-            checklist: data.checklist && data.checklist.length ? data.checklist : DEFAULT_CHECKLIST,
-            expenses: data.expenses || [],
-            games: data.games && data.games.length ? data.games : DEFAULT_GAMES,
+            members: Array.isArray(data.members) ? data.members : [],
+            spectators: Array.isArray(data.spectators) ? data.spectators : [],
+            blockedUids: Array.isArray(data.blockedUids) ? data.blockedUids : [],
+            schedule: Array.isArray(data.schedule) && data.schedule.length ? data.schedule : DEFAULT_SCHEDULE,
+            checklist: Array.isArray(data.checklist) && data.checklist.length ? data.checklist : DEFAULT_CHECKLIST,
+            expenses: Array.isArray(data.expenses) ? data.expenses : [],
+            games: Array.isArray(data.games) && data.games.length ? data.games : DEFAULT_GAMES,
             scores: data.scores || { A: 0, B: 0, C: 0, D: 0, E: 0 },
-            awards: data.awards && data.awards.length ? data.awards : DEFAULT_AWARDS,
+            awards: Array.isArray(data.awards) && data.awards.length ? data.awards : DEFAULT_AWARDS,
             votes: data.votes || {}
           };
         } else {
-          syncActiveUids();
           await persistState();
         }
 
@@ -508,7 +507,6 @@
                 paid1: false,
                 paid2: false
               });
-              syncActiveUids();
               await persistState();
             } else {
               state.spectators.push({
@@ -516,7 +514,6 @@
                 email: authUser.email,
                 name: shortName
               });
-              syncActiveUids();
               await persistState();
               showToast(`Cupos llenos (${state.maxMembers}/${state.maxMembers}): entraste como Espectador 👀`);
             }
@@ -525,7 +522,8 @@
 
         const me = getMe();
         const mySpec = getMySpectator();
-        document.getElementById("headerUserName").textContent = me ? me.name : (mySpec ? mySpec.name : (authUser.displayName || "Visitante"));
+        const defaultName = authUser ? (authUser.displayName || authUser.email.split("@")[0]).split(" ").slice(0, 2).join(" ") : "Invitado";
+        document.getElementById("headerUserName").textContent = me ? me.name : (mySpec ? mySpec.name : defaultName);
 
         const canEdit = isParticipant();
         document.getElementById("spectatorBadge").classList.toggle("hidden", canEdit);
@@ -534,6 +532,10 @@
           el.classList.toggle("hidden", !canEdit);
         });
 
+        renderAll();
+      }, (err) => {
+        console.error("Firestore snapshot error:", err);
+        showToast("Revisa las reglas de Firestore o tu conexión");
         renderAll();
       });
     }
@@ -547,11 +549,9 @@
     }
 
     async function persistState() {
-      syncActiveUids();
       await setDoc(tripDocRef, state, { merge: true });
     }
 
-    // Admin: restaurar borrador completo
     window.seedDraftAdmin = async () => {
       if (!isAdmin) return;
       state.budget = { house: 300, deposit: 100, food: 75, drinks: 60, firstPct: 65 };
@@ -613,7 +613,6 @@
       showToast("Usuario bloqueado 🚫");
     };
 
-    // Perfil
     window.openProfileModal = () => {
       const me = getMe();
       const spec = getMySpectator();
@@ -852,15 +851,17 @@
         `;
       }).join("");
 
-      document.getElementById("allMembersChips").innerHTML = state.members.map(m => `
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200">
-          ${m.name} ${m.dupla ? `(Dupla ${m.dupla})` : ""}
-          ${isAdmin && m.uid !== authUser?.uid ? `
-            <button onclick="demoteMemberAdmin('${m.uid}')" title="Pasar a espectador" class="text-amber-600 hover:text-amber-800 ml-1">👀</button>
-            <button onclick="blockUserAdmin('${m.uid}')" title="Bloquear usuario" class="text-rose-600 hover:text-rose-800 ml-0.5">🚫</button>
-          ` : ""}
-        </span>
-      `).join("");
+      document.getElementById("allMembersChips").innerHTML = state.members.length
+        ? state.members.map(m => `
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200">
+            ${m.name} ${m.dupla ? `(Dupla ${m.dupla})` : ""}
+            ${isAdmin && m.uid !== authUser?.uid ? `
+              <button onclick="demoteMemberAdmin('${m.uid}')" title="Pasar a espectador" class="text-amber-600 hover:text-amber-800 ml-1">👀</button>
+              <button onclick="blockUserAdmin('${m.uid}')" title="Bloquear usuario" class="text-rose-600 hover:text-rose-800 ml-0.5">🚫</button>
+            ` : ""}
+          </span>
+        `).join("")
+        : `<span>Aún no hay participantes registrados.</span>`;
 
       const specSec = document.getElementById("spectatorsSection");
       if (state.spectators.length > 0) {
@@ -1081,6 +1082,9 @@
       navigator.clipboard.writeText(text);
       showToast("Resumen copiado para WhatsApp");
     };
+
+    // Renderizado inicial inmediato antes de esperar Firestore
+    renderAll();
   </script>
 </body>
 </html>
